@@ -25,10 +25,10 @@ main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-column
 <main>
 <section class="panel">
  <div class="panel-head"><strong>RUNNING TRACK</strong><span class="sub" id="runState">ready</span></div>
- <div id="worldWrap"><canvas id="world" width="1000" height="600"></canvas></div>
+ <div id="worldWrap"><canvas id="world" width="1000" height="600"></canvas></div><div class="panel-head"><strong>WHOLE POPULATION</strong><span class="sub">every animal · live muscle activity</span></div><canvas id="populationView" width="1000" height="420"></canvas>
  <div class="panel-body">
   <div class="toolbar"><button class="primary" id="runBtn">▶ Start learning</button><button id="resetBtn">↻ Reset evolution</button></div>
-  <div class="note">Each animal has a neural network controlling its legs. It gets rewarded for travelling further, moving faster and staying upright. The camera follows the leading animals.</div>
+  <div class="note">The large view follows the selected animal. The population board below shows every animal at once. Orange/red muscle bands tighten; blue bands relax.</div>
  </div>
 </section>
 <aside class="side">
@@ -48,7 +48,7 @@ main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-column
  </div></section>
  <section class="panel"><div class="panel-head"><strong>NEURAL NETWORK</strong><span class="sub" id="brainLabel">best animal</span></div><div class="panel-body">
   <canvas id="network" width="294" height="210"></canvas><div class="net-legend"><span><i class="dot" style="background:#79baff"></i>positive</span><span><i class="dot" style="background:#ff7777"></i>negative</span></div>
-  <div class="note">Inputs include body balance, speed, leg angles and a timing signal. Outputs control each leg's hip and knee.</div>
+  <div class="note">The brain activates opposing muscle pairs at each hip and knee. Tightening muscles pull joints; relaxing muscles lets the opposing muscles move them back.</div>
  </div></section>
  <section class="panel"><div class="panel-head"><strong>EVOLUTION SETTINGS</strong></div><div class="panel-body">
   <div class="row"><label>Animals per generation</label><input id="population" type="number" min="4" max="60" value="24"></div>
@@ -61,7 +61,7 @@ main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-column
 </main>
 <script>
 (()=>{
-const canvas=document.getElementById('world'),ctx=canvas.getContext('2d'),nc=document.getElementById('network'),nctx=nc.getContext('2d');
+const canvas=document.getElementById('world'),ctx=canvas.getContext('2d'),popCanvas=document.getElementById('populationView'),pctx=popCanvas.getContext('2d'),nc=document.getElementById('network'),nctx=nc.getContext('2d');
 const W=1000,H=600,GROUND=455,INPUTS=17,HIDDEN=10,OUTPUTS=8,DT=1/60;
 const presets={
  dog:{name:'Dog',body:94,bodyH:28,leg:65,upper:37,lower:34,mass:1.05,color:'#dca66e',info:'A balanced four-legged animal with medium-length legs.'},
@@ -82,9 +82,9 @@ class Brain{
  mutate(rate){for(let i=0;i<this.w.length;i++)if(Math.random()<rate)this.w[i]+=randn()*.38;return this}
 }
 function makeAnimal(brain,index){
- const legs=Array.from({length:4},(_,i)=>({hip:0,knee:.35,hipV:0,kneeV:0,contact:false,footX:0,footY:GROUND}));
+ const legs=Array.from({length:4},(_,i)=>({hip:0,knee:.35,hipV:0,kneeV:0,contact:false,footX:0,footY:GROUND,hipFlex:0,hipExtend:0,kneeFlex:0,kneeExtend:0}));
  const y=GROUND-(preset.leg*.95+preset.bodyH*.45);
- const animal={x:100,y,vx:0,vy:0,angle:0,angleV:0,brain:brain||new Brain(),legs,age:0,dead:false,distance:0,maxSpeed:0,fitness:0,phase:Math.random()*Math.PI*2,bodyY:y,energy:0,index};
+ const animal={x:100,y,vx:0,vy:0,angle:0,angleV:0,brain:brain||new Brain(),legs,age:0,dead:false,distance:0,maxSpeed:0,fitness:0,phase:Math.random()*Math.PI*2,bodyY:y,energy:0,index,stoppedFrames:0};
  for(let i=0;i<4;i++){const foot=footPosition(animal,i);animal.legs[i].footX=foot.x;animal.legs[i].footY=foot.y;animal.legs[i].contact=foot.y>=GROUND-1}
  return animal;
 }
@@ -101,9 +101,11 @@ function updateAnimal(a){
  if(a.dead)return;a.age++;a.phase+=DT*(2.3+Math.max(0,a.vx)*.012);
  const out=a.brain.forward(inputsFor(a));let push=0,torque=0,support=0;
  for(let i=0;i<4;i++){
-  const l=a.legs[i],hipTarget=out[i*2]*.95,kneeTarget=out[i*2+1]*1.25;
-  l.hipV+=(hipTarget-l.hip)*19*DT-l.hipV*5.2*DT;l.kneeV+=(kneeTarget-l.knee)*21*DT-l.kneeV*5.5*DT;
-  l.hip+=l.hipV*DT;l.knee+=l.kneeV*DT;
+  const l=a.legs[i],hipSignal=out[i*2],kneeSignal=out[i*2+1];
+  l.hipFlex=Math.max(0,hipSignal);l.hipExtend=Math.max(0,-hipSignal);l.kneeFlex=Math.max(0,kneeSignal);l.kneeExtend=Math.max(0,-kneeSignal);
+  const hipTorque=(l.hipFlex-l.hipExtend)*17,kneeTorque=(l.kneeFlex-l.kneeExtend)*19;
+  l.hipV+=(hipTorque-l.hipV*6.5)*DT;l.kneeV+=(kneeTorque-l.kneeV*7)*DT;
+  l.hip=Math.max(-1.25,Math.min(1.25,l.hip+l.hipV*DT));l.knee=Math.max(-1.55,Math.min(1.55,l.knee+l.kneeV*DT));
   const foot=footPosition(a,i),oldX=l.footX||foot.x,oldY=l.footY||foot.y,footVX=(foot.x-oldX)/DT,footVY=(foot.y-oldY)/DT;
   l.contact=foot.y>=GROUND-1;
   l.footX=foot.x;l.footY=Math.min(GROUND,foot.y);
@@ -122,7 +124,8 @@ function updateAnimal(a){
  a.y+=a.vy*DT;
  a.maxSpeed=Math.max(a.maxSpeed,a.vx);a.distance=Math.max(0,a.x-100);
  a.energy+=out.reduce((s,v)=>s+Math.abs(v),0)*DT;
- if(Math.abs(a.angle)>1.12||a.y>GROUND-12||a.y<30||a.age>1500||a.x<60||a.vx< -18){kill(a)}
+ if(a.vx<9)a.stoppedFrames++;else a.stoppedFrames=0;
+ if(Math.abs(a.angle)>1.12||a.y>GROUND-12||a.y<30||a.age>1500||a.x<60||a.vx< -18||(a.age>120&&a.stoppedFrames>150)){kill(a)}
 }
 function kill(a){
  if(a.dead)return;a.dead=true;finished++;
@@ -158,6 +161,9 @@ function drawAnimal(a,offset){
   const knee={x:hip.x+Math.sin(kneeAngle)*preset.upper,y:hip.y+Math.cos(kneeAngle)*preset.upper};
   ctx.strokeStyle=preset.color;ctx.lineWidth=Math.max(5,preset.bodyH*.17);ctx.lineCap='round';
   ctx.beginPath();ctx.moveTo(hip.x-offset,hip.y);ctx.lineTo(knee.x-offset,knee.y);ctx.lineTo(foot.x-offset,Math.min(GROUND,foot.y));ctx.stroke();
+  const muscle=(x1,y1,x2,y2,level,color)=>{ctx.strokeStyle=color;ctx.globalAlpha=.25+level*.75;ctx.lineWidth=2+level*5;ctx.beginPath();ctx.moveTo(x1-offset,y1);ctx.lineTo(x2-offset,y2);ctx.stroke();ctx.globalAlpha=1};
+  muscle(hip.x,hip.y,knee.x,knee.y,l.hipFlex,'#ff8b55');muscle(hip.x,hip.y,knee.x,knee.y,l.hipExtend,'#79baff');
+  muscle(knee.x,knee.y,foot.x,Math.min(GROUND,foot.y),l.kneeFlex,'#ff8b55');muscle(knee.x,knee.y,foot.x,Math.min(GROUND,foot.y),l.kneeExtend,'#79baff');
   ctx.fillStyle='#24282a';ctx.beginPath();ctx.arc(foot.x-offset,Math.min(GROUND,foot.y),3,0,Math.PI*2);ctx.fill();
  }
  if(a===selected){ctx.strokeStyle='#a8e063';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,preset.body*.68,preset.leg*.9,0,0,Math.PI*2);ctx.stroke()}
@@ -172,8 +178,19 @@ function draw(){
  ctx.strokeStyle='#465257';ctx.lineWidth=2;for(let x=-(cameraX%100);x<W;x+=100){ctx.beginPath();ctx.moveTo(x,GROUND+35);ctx.lineTo(x+45,GROUND+35);ctx.stroke()}
  // distance markers
  ctx.fillStyle='#929da3';ctx.font='12px Arial';for(let d=Math.ceil(cameraX/500)*500;d<cameraX+W;d+=500){let x=d-cameraX;ctx.fillText((d/100).toFixed(0)+' m',x+5,GROUND+65);ctx.strokeStyle='#344044';ctx.beginPath();ctx.moveTo(x,GROUND-8);ctx.lineTo(x,GROUND+8);ctx.stroke()}
- for(const a of animals){if(!a.dead)drawAnimal(a,cameraX)}
- ctx.fillStyle='#a8e063';ctx.font='12px Arial';ctx.fillText('FINISH LINE →',W-110,35);
+ if(selected)drawAnimal(selected,cameraX)
+ ctx.fillStyle='#a8e063';ctx.font='12px Arial';ctx.fillText('FOLLOWING: '+(selected?('ANIMAL '+(selected.index+1)):'—'),16,25);ctx.fillText('FINISH LINE →',W-110,35);
+}
+function drawPopulation(){
+ const cols=4,cellW=250,cellH=84,rows=Math.max(1,Math.ceil(animals.length/cols));popCanvas.height=rows*cellH;pctx.fillStyle='#101719';pctx.fillRect(0,0,popCanvas.width,popCanvas.height);
+ for(let i=0;i<animals.length;i++){
+  const a=animals[i],col=i%cols,row=Math.floor(i/cols),x=col*cellW,y=row*cellH;
+  pctx.fillStyle=a===selected?'#26352b':'#151d20';pctx.fillRect(x+2,y+2,cellW-4,cellH-4);pctx.strokeStyle=a===selected?'#a8e063':'#303b3f';pctx.strokeRect(x+2,y+2,cellW-4,cellH-4);
+  pctx.fillStyle='#dce3e5';pctx.font='11px Arial';pctx.fillText('Animal '+(i+1)+' · '+(a.dead?'stopped':a.vx.toFixed(0)+' px/s'),x+9,y+15);
+  if(!a.dead){const sc=.30,originX=x+105,originY=y+54;pctx.save();pctx.translate(originX-a.x*sc,originY-a.y*sc);pctx.scale(sc,sc);drawAnimal(a,0);pctx.restore()}
+  else{pctx.fillStyle='#929da3';pctx.font='11px Arial';pctx.fillText('FINISHED',x+96,y+54)}
+  pctx.fillStyle='#929da3';pctx.font='10px Arial';pctx.fillText('distance '+a.distance.toFixed(0)+' · best '+a.maxSpeed.toFixed(0)+' px/s',x+9,y+75);
+ }
 }
 function drawNetwork(brain){
  nctx.fillStyle='#111619';nctx.fillRect(0,0,294,210);if(!brain){nctx.fillStyle='#929da3';nctx.fillText('Start to see a brain',80,105);return}
@@ -190,7 +207,7 @@ function renderStats(){
  let avg=animals.length?animals.reduce((s,a)=>s+a.distance,0)/animals.length:0;$('average').textContent=avg.toFixed(0);
  const pct=animals.length?finished/animals.length*100:0;$('progress').value=pct;$('progressText').textContent=pct.toFixed(0)+'%';
 }
-function loop(){tick();if(animals.length){if(!selected||selected.dead)selected=animals.filter(a=>!a.dead).sort((a,b)=>b.fitness-a.fitness)[0]||animals.slice().sort((a,b)=>b.distance-a.distance)[0];drawNetwork(selected&&selected.brain);renderStats()}draw();requestAnimationFrame(loop)}
+function loop(){tick();if(animals.length){if(!selected||selected.dead)selected=animals.filter(a=>!a.dead).sort((a,b)=>b.distance-a.distance)[0]||animals.slice().sort((a,b)=>b.distance-a.distance)[0];drawNetwork(selected&&selected.brain);renderStats();drawPopulation()}draw();requestAnimationFrame(loop)}
 $('runBtn').onclick=()=>{if(running){running=false;autoRestartAt=0;$('runState').textContent='paused';$('runBtn').textContent='▶ Resume'}else if(!animals.length||animals.every(a=>a.dead)){nextGeneration()}else{autoRestartAt=0;running=true;$('runState').textContent='animals learning';$('runBtn').textContent='Ⅱ Pause'}};
 $('resetBtn').onclick=()=>{generation=0;bestEver=0;topSpeedEver=0;animals=[];autoRestartAt=0;$('generation').textContent='0';$('record').textContent='0';$('topSpeed').textContent='0';$('log').textContent='Evolution reset.';nextGeneration()};
 $('animal').onchange=e=>{preset=presets[e.target.value];$('animalLabel').textContent=preset.name.toLowerCase();$('animalInfo').textContent=preset.info;generation=0;bestEver=0;topSpeedEver=0;animals=[];autoRestartAt=0;$('generation').textContent='0';$('record').textContent='0';$('log').textContent='New animal selected: '+preset.name+'. Starting fresh evolution.';nextGeneration()};
