@@ -2,225 +2,165 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>nn animals</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIELDKIT // Loadout Studio</title>
 <style>
-:root{color-scheme:dark;--bg:#101214;--panel:#191d20;--line:#30373b;--muted:#929da3;--text:#e7ecee;--green:#a8e063;--red:#ff7777;--blue:#79baff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Arial,Helvetica,sans-serif}
-header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
-h1{font-size:21px;margin:0;font-weight:700;letter-spacing:-.6px}h1 span{color:var(--green)}.sub{color:var(--muted);font-size:12px;margin-top:3px}
-main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}.panel-head{padding:11px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-head strong{font-size:13px}.panel-body{padding:13px}
-#worldWrap{position:relative;background:#101719}canvas{display:block;width:100%;height:auto}#world{aspect-ratio:1000/600}
-.toolbar{display:flex;flex-wrap:wrap;gap:7px}button,select{background:#262d31;border:1px solid #424c52;color:var(--text);border-radius:5px;padding:8px 11px;font:inherit;font-size:12px;cursor:pointer}button:hover,select:hover{border-color:var(--green)}button.primary{background:var(--green);border-color:var(--green);color:#10150c;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}
-.note{font-size:11px;color:var(--muted);margin-top:8px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#121619;border:1px solid var(--line);border-radius:6px;padding:9px}.stat label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px}.stat b{display:block;font-size:20px;margin-top:2px;font-variant-numeric:tabular-nums}.stat small{font-size:10px;color:var(--muted)}
-.side{display:flex;flex-direction:column;gap:14px}.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0}.row label{font-size:12px;color:#c5cdd1}input[type=range]{width:120px;accent-color:var(--green)}input[type=number]{width:65px;background:#101619;border:1px solid var(--line);color:var(--text);padding:5px;border-radius:4px}
-.value{font-size:11px;color:var(--green);min-width:32px;text-align:right}#network{width:100%;height:210px;background:#111619;border:1px solid var(--line);border-radius:5px}.net-legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
-#log{font:11px/1.6 Consolas,monospace;color:#aab4b9;max-height:110px;overflow:auto;white-space:pre-wrap}progress{width:100%;height:7px;accent-color:var(--green)}
-@media(max-width:900px){main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}@media(max-width:520px){header{padding:14px}main{padding:9px}.toolbar button{flex:1}}
+:root{--bg:#101310;--panel:#191e19;--panel2:#202820;--line:#354034;--muted:#9ba696;--text:#edf1e9;--lime:#c4f06b;--orange:#e8a45c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#303b2b 0,#101310 55%);color:var(--text);font:14px/1.45 Arial,sans-serif}button,select,input{font:inherit}button{cursor:pointer}
+header{height:68px;padding:0 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#111610e8;position:sticky;top:0;z-index:5}
+.brand{font-weight:900;letter-spacing:2px;font-size:20px}.brand span{color:var(--lime)}.tag{font-size:10px;color:var(--muted);letter-spacing:2px}
+main{max-width:1500px;margin:auto;padding:18px;display:grid;grid-template-columns:230px minmax(350px,1fr) 340px;gap:14px}
+.panel{background:linear-gradient(145deg,#1d241d,#171c17);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 8px 28px #0003}.head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:1.4px}.muted{color:var(--muted);font-size:11px;font-weight:400;letter-spacing:0}
+.nav{padding:10px;display:flex;flex-direction:column;gap:6px}.nav button{background:transparent;color:#b8c2b1;text-align:left;border:1px solid transparent;padding:12px;border-radius:5px;font-weight:700}.nav button.active,.nav button:hover{background:#2a3528;border-color:#53634a;color:var(--lime)}.nav small{display:block;color:#82907d;font-size:10px;font-weight:400;margin-top:3px}
+.left-foot{padding:14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);line-height:1.6}
+.center{display:flex;flex-direction:column;gap:14px;min-width:0}.preview{background:linear-gradient(#29352b,#182019 58%,#111711);min-height:340px;position:relative;overflow:hidden}.preview:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,#ffffff09 50%,transparent 50.2%),repeating-linear-gradient(0deg,transparent 0 39px,#ffffff08 40px)}.preview-top{position:absolute;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:1}.pill{border:1px solid #66735e;background:#111a11cc;color:var(--lime);border-radius:3px;padding:5px 8px;font-size:9px;letter-spacing:1.2px}.preview-art{height:340px;display:flex;align-items:center;justify-content:center;position:relative}.preview-art svg{width:min(90%,650px);height:auto;filter:drop-shadow(0 15px 12px #0008)}.preview-bottom{position:absolute;bottom:12px;left:16px;right:16px;display:flex;justify-content:space-between;color:#c0c9bb;font-size:10px;letter-spacing:1px}
+.char-preview{height:390px;display:flex;justify-content:center;align-items:center;position:relative;background:radial-gradient(ellipse,#42503c 0,#202a20 45%,#141a14 78%)}.char-preview svg{height:330px;max-width:90%;filter:drop-shadow(0 12px 9px #0008)}
+.section-title{font-size:11px;letter-spacing:1.5px;font-weight:800;margin:0 0 10px}.pad{padding:14px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button,.chip{background:#242d23;border:1px solid #46513f;color:#d5dfd0;padding:8px 10px;border-radius:4px;font-size:11px}.tabs button.active,.chip.active{border-color:var(--lime);color:var(--lime);background:#303d29}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.item{background:#202820;border:1px solid #394536;border-radius:5px;padding:11px;text-align:left;color:var(--text);min-width:0}.item:hover,.item.active{border-color:var(--lime);background:#2a3527}.item b{display:block;font-size:12px}.item small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.item .mini{font-size:20px;margin-bottom:6px}
+.right{display:flex;flex-direction:column;gap:14px}.slot-list{display:flex;flex-direction:column;gap:7px}.slot{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#202820;border:1px solid #3b4638;border-radius:5px}.slot strong{font-size:11px}.slot span{font-size:10px;color:var(--lime)}.slot button{background:transparent;border:0;color:var(--muted);font-size:10px}
+.field{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}.field label{font-size:11px;color:#c7d0c2}.field select,.field input[type=text]{width:58%;background:#101610;color:var(--text);border:1px solid #46513f;border-radius:4px;padding:8px}.swatches{display:flex;gap:8px;flex-wrap:wrap}.swatch{width:26px;height:26px;border-radius:50%;border:2px solid #66705f;cursor:pointer}.swatch.active{outline:2px solid var(--lime);outline-offset:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #56634e;background:#293428;color:var(--text);padding:9px 12px;border-radius:4px;font-size:11px;font-weight:700}.btn.primary{background:var(--lime);border-color:var(--lime);color:#182012}.btn:hover{filter:brightness(1.12)}.saved{display:flex;gap:6px;flex-wrap:wrap}.saved button{flex:1;min-width:75px}
+.notice{font-size:10px;color:var(--muted);line-height:1.55;padding:11px 13px;border-top:1px solid var(--line)}
+#weaponPanel,#characterPanel{display:none}.show{display:block!important}
+@media(max-width:1100px){main{grid-template-columns:190px minmax(300px,1fr)}.right{grid-column:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.right .panel:last-child{grid-column:1/-1}}
+@media(max-width:700px){header{padding:0 14px}main{display:flex;flex-direction:column;padding:9px}.nav{display:grid;grid-template-columns:repeat(3,1fr)}.nav button{text-align:center;padding:9px 4px;font-size:10px}.nav small,.left-foot{display:none}.right{display:flex}.preview,.preview-art{min-height:250px;height:250px}.char-preview{height:300px}.char-preview svg{height:260px}}
 </style>
 </head>
 <body>
-<header><div><h1><span>nn</span> animals</h1><div class="sub">tiny brains. wobbly legs. big ambitions.</div></div><div class="sub">2D EVOLUTION LAB / 001</div></header>
+<header><div class="brand"><span>FIELD</span>KIT <span style="color:#edf1e9">/</span> STUDIO</div><div class="tag">PERSONAL LOADOUT SANDBOX · BUILD 01</div></header>
 <main>
-<section class="panel">
- <div class="panel-head"><strong>RUNNING TRACK</strong><span class="sub" id="runState">ready</span></div>
- <div id="worldWrap"><canvas id="world" width="1000" height="600"></canvas></div><div class="panel-head"><strong>WHOLE POPULATION</strong><span class="sub">every animal · live muscle activity</span></div><canvas id="populationView" width="1000" height="420"></canvas>
- <div class="panel-body">
-  <div class="toolbar"><button class="primary" id="runBtn">▶ Start learning</button><button id="resetBtn">↻ Reset evolution</button></div>
-  <div class="note">The large view follows the selected animal. The population board below shows every animal at once. Orange/red muscle bands tighten; blue bands relax.</div>
+<aside class="panel">
+ <div class="head">WORKBENCH <span class="muted">01 / 03</span></div>
+ <nav class="nav">
+  <button class="active" data-page="weapons">▰ WEAPONS<small>Primary, sidearm & visual modules</small></button>
+  <button data-page="character">◉ OPERATOR<small>Clothing, headwear & colours</small></button>
+  <button data-page="presets">▤ PRESETS<small>Save and load your builds</small></button>
+ </nav>
+ <div class="left-foot">FIELDKIT is an independent fan-made concept. It uses original fictional equipment and a new interface, not BRM5 assets or branding.</div>
+</aside>
+<section class="center">
+ <div class="panel" id="weaponPanel">
+  <div class="head"><span>WEAPON DISPLAY</span><span class="pill">VISUAL PREVIEW</span></div>
+  <div class="preview"><div class="preview-top"><span class="pill" id="weaponClass">PRIMARY PLATFORM</span><span class="pill">NON-FUNCTIONAL SANDBOX</span></div><div class="preview-art" id="weaponArt"></div><div class="preview-bottom"><span id="weaponName">KESTREL-9</span><span id="weaponFinish">FIELD FINISH / OLIVE</span></div></div>
+  <div class="pad"><div class="section-title">SELECT PLATFORM</div><div class="grid" id="weaponChoices"></div></div>
+  <div class="notice">Equipment and modules are fictional cosmetic selections for a game-style mock-up. They do not represent real-world compatibility, performance or construction details.</div>
+ </div>
+ <div class="panel" id="characterPanel">
+  <div class="head"><span>OPERATOR DISPLAY</span><span class="pill">CHARACTER PREVIEW</span></div>
+  <div class="char-preview" id="characterArt"></div>
+  <div class="pad"><div class="section-title">CUSTOMISATION CATEGORIES</div><div class="tabs" id="charTabs"></div></div>
+ </div>
+ <div class="panel" id="presetsPanel" style="display:none">
+  <div class="head">LOADOUT ARCHIVE <span class="pill">LOCAL SAVES</span></div>
+  <div class="pad"><div class="section-title">YOUR PRESETS</div><div class="grid" id="presetCards"></div><p class="muted">Presets are stored in this browser on this device.</p></div>
  </div>
 </section>
-<aside class="side">
- <section class="panel"><div class="panel-head"><strong>EVOLUTION</strong><span class="sub" id="animalLabel">dog</span></div><div class="panel-body">
-  <div class="stats">
-   <div class="stat"><label>Generation</label><b id="generation">0</b></div><div class="stat"><label>Animals running</label><b id="alive">0</b></div>
-   <div class="stat"><label>Best distance</label><b id="bestDistance">0</b><small>metres-ish</small></div><div class="stat"><label>Top speed</label><b id="topSpeed">0</b><small>pixels / second</small></div>
-   <div class="stat"><label>Average distance</label><b id="average">0</b></div><div class="stat"><label>Best ever</label><b id="record">0</b></div>
-  </div>
-  <div class="row"><label>Generation progress</label><span class="value" id="progressText">0%</span></div><progress id="progress" value="0" max="100"></progress>
-  <div class="note">The strongest brains are copied and randomly mutated. Over generations, the animals should discover better ways to move.</div>
+<aside class="right">
+ <section class="panel" id="attachmentPanel"><div class="head">VISUAL MODULES <span class="muted">COSMETIC ONLY</span></div><div class="pad">
+  <div class="tabs" id="attachmentTabs"></div><div style="height:10px"></div><div class="grid" id="attachmentChoices"></div>
+ </div><div class="notice">Changing a module changes the preview and preset data only. No real-world weapon advice or specifications are included.</div></section>
+ <section class="panel" id="characterOptions" style="display:none"><div class="head">APPEARANCE OPTIONS</div><div class="pad" id="charOptions"></div></section>
+ <section class="panel"><div class="head">CURRENT BUILD <span class="muted" id="buildStatus">UNSAVED</span></div><div class="pad">
+  <div class="slot-list" id="buildSummary"></div><div style="height:12px"></div><div class="actions"><button class="btn primary" id="saveBtn">＋ SAVE PRESET</button><button class="btn" id="resetBtn">RESET</button></div>
  </div></section>
- <section class="panel"><div class="panel-head"><strong>ANIMAL PRESET</strong></div><div class="panel-body">
-  <div class="row"><label for="animal">Choose an animal</label><select id="animal"><option value="dog">Dog</option><option value="cat">Cat</option><option value="horse">Horse</option><option value="rabbit">Rabbit</option><option value="fox">Fox</option><option value="pig">Pig</option></select></div>
-  <div class="note" id="animalInfo">A balanced four-legged animal. Learn to coordinate all four legs.</div>
-  <div class="note">Changing animal starts a fresh evolution with that animal's body shape and leg proportions.</div>
- </div></section>
- <section class="panel"><div class="panel-head"><strong>NEURAL NETWORK</strong><span class="sub" id="brainLabel">best animal</span></div><div class="panel-body">
-  <canvas id="network" width="294" height="210"></canvas><div class="net-legend"><span><i class="dot" style="background:#79baff"></i>positive</span><span><i class="dot" style="background:#ff7777"></i>negative</span></div>
-  <div class="note">The brain activates opposing muscle pairs at each hip and knee. Tightening muscles pull joints; relaxing muscles lets the opposing muscles move them back.</div>
- </div></section>
- <section class="panel"><div class="panel-head"><strong>EVOLUTION SETTINGS</strong></div><div class="panel-body">
-  <div class="row"><label>Animals per generation</label><input id="population" type="number" min="4" max="60" value="24"></div>
-  <div class="row"><label>Simulation speed</label><input id="simSpeed" type="range" min="1" max="8" value="3"><span class="value" id="speedVal">3x</span></div>
-  <div class="row"><label>Mutation amount</label><input id="mutation" type="range" min="1" max="100" value="22"><span class="value" id="mutationVal">22%</span></div>
-  <div class="note">More mutation means bigger changes between generations. Population changes apply next generation.</div>
- </div></section>
- <section class="panel"><div class="panel-head"><strong>LEARNING LOG</strong><span class="sub">latest events</span></div><div class="panel-body"><div id="log">Choose an animal and start learning...</div></div></section>
+ <section class="panel"><div class="head">QUICK SLOTS</div><div class="pad"><div class="saved" id="quickSlots"></div><div class="notice" style="padding:10px 0 0;border:0">Save multiple visual builds and switch between them instantly.</div></div></section>
 </aside>
 </main>
 <script>
 (()=>{
-const canvas=document.getElementById('world'),ctx=canvas.getContext('2d'),popCanvas=document.getElementById('populationView'),pctx=popCanvas.getContext('2d'),nc=document.getElementById('network'),nctx=nc.getContext('2d');
-const W=1000,H=600,GROUND=455,INPUTS=17,HIDDEN=10,OUTPUTS=8,DT=1/60;
-const presets={
- dog:{name:'Dog',body:94,bodyH:28,leg:65,upper:37,lower:34,mass:1.05,color:'#dca66e',info:'A balanced four-legged animal with medium-length legs.'},
- cat:{name:'Cat',body:78,bodyH:23,leg:72,upper:39,lower:38,mass:.82,color:'#c1a5df',info:'A light, flexible animal with longer legs and a compact body.'},
- horse:{name:'Horse',body:130,bodyH:38,leg:91,upper:49,lower:48,mass:1.55,color:'#b8794e',info:'A larger runner with long legs and a heavier body.'},
- rabbit:{name:'Rabbit',body:65,bodyH:24,leg:62,upper:34,lower:36,mass:.72,color:'#d5d5d0',info:'A compact animal with powerful hind legs.'},
- fox:{name:'Fox',body:88,bodyH:26,leg:74,upper:40,lower:39,mass:.88,color:'#df8954',info:'A slim runner with long legs and a light body.'},
- pig:{name:'Pig',body:92,bodyH:34,leg:43,upper:24,lower:23,mass:1.3,color:'#e99b9b',info:'A stockier animal with short legs and a heavier body.'}
+const weapons=[
+ {id:"kestrel",name:"Kestrel-9",type:"Compact platform",desc:"Short profile · graphite frame",icon:"▰"},
+ {id:"wayfarer",name:"Wayfarer-4",type:"General platform",desc:"Balanced silhouette · modular shell",icon:"▰"},
+ {id:"longshot",name:"Longshot-7",type:"Precision platform",desc:"Extended profile · clean lines",icon:"▰"},
+ {id:"mako",name:"Mako-12",type:"Utility platform",desc:"Chunky profile · polymer finish",icon:"▰"},
+ {id:"pioneer",name:"Pioneer-X",type:"Support platform",desc:"Broad profile · reinforced shell",icon:"▰"},
+ {id:"sidekick",name:"Sidekick-3",type:"Sidearm platform",desc:"Compact secondary · smooth frame",icon:"◩"}
+];
+const moduleData={
+ Optic:[["Clear Dot","Simple glass module"],["Horizon Holo","Wide-frame visual"],["Range Glass","Long housing style"],["No Module","Clean top rail"]],
+ Barrel:[["Cinder Shroud","Dark outer finish"],["Ridge Sleeve","Ribbed visual sleeve"],["Plain End","Original silhouette"],["No Module","Unmodified look"]],
+ Underbarrel:[["Arc Handle","Angled visual grip"],["Rail Guard","Textured lower shell"],["Smooth Panel","Clean underside"],["No Module","Unmodified look"]],
+ Stock:[["Foldline","Compact outline"],["Trail Frame","Open-frame style"],["Solid Frame","Classic silhouette"],["No Module","Unmodified look"]],
+ Magazine:[["Slate","Dark finish"],["Sand","Warm finish"],["Moss","Green finish"],["No Module","Original look"]],
+ Finish:[["Olive","Field green"],["Graphite","Dark charcoal"],["Sandstone","Warm tan"],["Arctic","Pale grey"]]
 };
-let preset=presets.dog,animals=[],generation=0,running=false,finished=0,frame=0,bestEver=0,selected=null,autoRestartAt=0,cameraX=0,topSpeedEver=0;
+const charCategories={
+ Headwear:[["None","No headwear"],["Patrol Cap","Soft cap"],["Shell Helmet","Rounded helmet"],["Ranger Hood","Fabric hood"]],
+ Face:[["Clear","Open face"],["Dust Mask","Fabric face cover"],["Visor","Tinted face shield"],["Neck Wrap","Loose fabric wrap"]],
+ Top:[["Field Shirt","Light uniform top"],["Utility Jacket","Layered jacket"],["Armoured Vest","Padded outer vest"],["Hoodie","Casual top"]],
+ Legs:[["Cargo","Pocketed trousers"],["Tactical","Reinforced panels"],["Trail","Lightweight trousers"],["Denim","Casual trousers"]],
+ Gloves:[["None","No gloves"],["Utility","Padded gloves"],["Ridge","Ribbed gloves"]],
+ Boots:[["Patrol","High boots"],["Trail","Outdoor boots"],["Urban","Low boots"]]
+};
+const colors=[["Olive","#71845a"],["Charcoal","#343b3b"],["Sand","#b49a70"],["Slate","#667785"],["Rust","#98694f"],["Snow","#c7c9bf"]];
+const state={weapon:"kestrel",modules:{Optic:"Clear Dot",Barrel:"Cinder Shroud",Underbarrel:"Arc Handle",Stock:"Foldline",Magazine:"Slate",Finish:"Olive"},character:{Headwear:"Shell Helmet",Face:"Clear",Top:"Armoured Vest",Legs:"Cargo",Gloves:"Utility",Boots:"Patrol",Colour:"Olive"},page:"weapons",moduleTab:"Optic",charTab:"Headwear",saved:[],activePreset:null};
 const $=id=>document.getElementById(id);
-function log(s){$('log').textContent=(s+'\n'+$('log').textContent).slice(0,1200)}
-function randn(){return(Math.random()+Math.random()+Math.random()+Math.random()+Math.random()+Math.random()-3)*.816}
-class Brain{
- constructor(w){this.w=w||Array.from({length:INPUTS*HIDDEN+HIDDEN+HIDDEN*OUTPUTS+OUTPUTS},()=>Math.random()*1.4-.7);this.last=null}
- forward(input){let k=0,h=[];for(let j=0;j<HIDDEN;j++){let z=0;for(let i=0;i<INPUTS;i++)z+=input[i]*this.w[k++];z+=this.w[k++];h.push(Math.tanh(z))}let out=[];for(let j=0;j<OUTPUTS;j++){let z=0;for(let i=0;i<HIDDEN;i++)z+=h[i]*this.w[k++];z+=this.w[k++];out.push(Math.tanh(z))}this.last={input:input.slice(),hidden:h,output:out};return out}
- clone(){return new Brain(this.w.slice())}
- mutate(rate){for(let i=0;i<this.w.length;i++)if(Math.random()<rate)this.w[i]+=randn()*.38;return this}
+const currentWeapon=()=>weapons.find(w=>w.id===state.weapon)||weapons[0];
+function weaponSVG(){
+ const w=currentWeapon(),finish=state.modules.Finish;
+ const color=({Olive:"#78885f",Graphite:"#414847",Sandstone:"#b9a27a",Arctic:"#c4c9c3"})[finish]||"#78885f";
+ const long=w.id==="longshot",compact=w.id==="sidekick"||w.id==="kestrel";
+ const scale=long?1.13:compact?.82:1;
+ return '<svg viewBox="0 0 700 260" role="img" aria-label="Fictional equipment silhouette"><g transform="translate(350 128) scale('+scale+') translate(-350 -128)"><path d="M95 112 L168 98 L220 101 L242 88 L455 88 L482 99 L610 99 L622 112 L610 125 L476 125 L452 139 L242 139 L220 127 L166 132 L95 120Z" fill="'+color+'" stroke="#c2cbb7" stroke-width="3"/><path d="M260 89 L448 89 L463 99 L463 127 L445 138 L260 138Z" fill="#28312b" stroke="#a5b29b" stroke-width="2"/><path d="M290 139 L342 139 L329 210 L286 210 L300 151Z" fill="#4a5547" stroke="#9eaa94" stroke-width="3"/><path d="M190 127 L232 127 L226 176 L193 176Z" fill="#59664f" stroke="#aab69f" stroke-width="2"/><path d="M480 102 L604 102 L612 112 L604 122 L480 122Z" fill="#303934"/><path d="M360 89 L375 65 L424 65 L437 89Z" fill="#3a453a" stroke="#aab69f" stroke-width="2"/><path d="M375 65 L424 65 L424 58 L375 58Z" fill="#8a9b78"/><path d="M150 102 L150 82 L190 82 L190 102" fill="none" stroke="#aab69f" stroke-width="4"/><circle cx="245" cy="114" r="7" fill="#b9c7a9"/><path d="M95 112 L74 112 L66 118 L74 124 L95 124Z" fill="#c0c9b8"/><path d="M346 140 Q360 155 370 141" fill="none" stroke="#d1d9c7" stroke-width="4"/></g><g fill="none" stroke="#d2e0c6" opacity=".5"><path d="M110 151H590" stroke-dasharray="4 8"/><path d="M120 157H580" stroke-width="1"/></g></svg>';
 }
-function makeAnimal(brain,index){
- const legs=Array.from({length:4},(_,i)=>({hip:0,knee:.35,hipV:0,kneeV:0,contact:false,footX:0,footY:GROUND,hipFlex:0,hipExtend:0,kneeFlex:0,kneeExtend:0}));
- const y=GROUND-(preset.leg*.95+preset.bodyH*.45);
- const animal={x:100,y,vx:0,vy:0,angle:0,angleV:0,brain:brain||new Brain(),legs,age:0,dead:false,distance:0,maxSpeed:0,fitness:0,phase:Math.random()*Math.PI*2,bodyY:y,energy:0,index,stoppedFrames:0};
- for(let i=0;i<4;i++){const foot=footPosition(animal,i);animal.legs[i].footX=foot.x;animal.legs[i].footY=foot.y;animal.legs[i].contact=foot.y>=GROUND-1}
- return animal;
+function renderWeapon(){
+ $('weaponName').textContent=currentWeapon().name.toUpperCase();$('weaponClass').textContent=currentWeapon().type.toUpperCase();$('weaponFinish').textContent='FIELD FINISH / '+state.modules.Finish.toUpperCase();$('weaponArt').innerHTML=weaponSVG();
+ $('weaponChoices').innerHTML=weapons.map(w=>'<button class="item '+(state.weapon===w.id?'active':'')+'" data-weapon="'+w.id+'"><div class="mini">'+w.icon+'</div><b>'+w.name+'</b><small>'+w.desc+'</small></button>').join('');
+ document.querySelectorAll('[data-weapon]').forEach(b=>b.onclick=()=>{state.weapon=b.dataset.weapon;state.activePreset=null;render()});
 }
-function nextGeneration(){
- autoRestartAt=0;const n=Math.max(4,Math.min(60,parseInt($('population').value)||24));let brains=[];
- if(generation>0&&animals.length){const ranked=animals.slice().sort((a,b)=>b.fitness-a.fitness),elite=ranked.slice(0,Math.max(2,Math.ceil(n*.22)));for(let i=0;i<n;i++){let b=elite[i%elite.length].brain.clone();if(i>=2)b.mutate(+$('mutation').value/100);brains.push(b)}}else for(let i=0;i<n;i++)brains.push(new Brain());
- animals=brains.map((b,i)=>makeAnimal(b,i));generation++;finished=0;running=true;selected=animals[0];cameraX=0;
- $('generation').textContent=generation;$('runState').textContent='animals learning';$('runBtn').textContent='Ⅱ Pause';log('Generation '+generation+' started · '+n+' '+preset.name.toLowerCase()+'s');draw();
+function renderModules(){
+ $('attachmentTabs').innerHTML=Object.keys(moduleData).map(k=>'<button class="'+(state.moduleTab===k?'active':'')+'" data-mtab="'+k+'">'+k+'</button>').join('');
+ document.querySelectorAll('[data-mtab]').forEach(b=>b.onclick=()=>{state.moduleTab=b.dataset.mtab;renderModules()});
+ $('attachmentChoices').innerHTML=moduleData[state.moduleTab].map(([name,desc])=>'<button class="item '+(state.modules[state.moduleTab]===name?'active':'')+'" data-module="'+name+'"><b>'+name+'</b><small>'+desc+'</small></button>').join('');
+ document.querySelectorAll('[data-module]').forEach(b=>b.onclick=()=>{state.modules[state.moduleTab]=b.dataset.module;state.activePreset=null;render()});
 }
-function hipPosition(a,i){const front=i<2,side=(i%2===0?-1:1),localX=(front?1:-1)*preset.body*.34;const ca=Math.cos(a.angle),sa=Math.sin(a.angle);return{x:a.x+localX*ca-side*preset.bodyH*.22*sa,y:a.y+localX*sa+side*preset.bodyH*.22*ca}}
-function footPosition(a,i){const l=a.legs[i],hip=hipPosition(a,i),a1=a.angle+l.hip,a2=a1+l.knee;return{x:hip.x+Math.sin(a1)*preset.upper+Math.sin(a2)*preset.lower,y:hip.y+Math.cos(a1)*preset.upper+Math.cos(a2)*preset.lower}}
-function inputsFor(a){const input=[Math.sin(a.phase),Math.cos(a.phase),Math.max(-1,Math.min(1,a.vx/260)),Math.max(-1,Math.min(1,a.angle/0.8)),Math.max(-1,Math.min(1,a.angleV/4)),Math.max(-1,Math.min(1,a.vy/100))];for(let i=0;i<4;i++)input.push(Math.max(-1,Math.min(1,a.legs[i].hip/1.3)));for(let i=0;i<4;i++)input.push(Math.max(-1,Math.min(1,a.legs[i].knee/1.5)));for(let i=0;i<3;i++)input.push(a.legs[i].contact?1:-1);return input}
-function updateAnimal(a){
- if(a.dead)return;a.age++;a.phase+=DT*(2.3+Math.max(0,a.vx)*.012);
- const out=a.brain.forward(inputsFor(a));let push=0,torque=0,support=0;
- for(let i=0;i<4;i++){
-  const l=a.legs[i],hipSignal=out[i*2],kneeSignal=out[i*2+1];
-  l.hipFlex=Math.max(0,hipSignal);l.hipExtend=Math.max(0,-hipSignal);l.kneeFlex=Math.max(0,kneeSignal);l.kneeExtend=Math.max(0,-kneeSignal);
-  const hipTorque=(l.hipFlex-l.hipExtend)*17,kneeTorque=(l.kneeFlex-l.kneeExtend)*19;
-  l.hipV+=(hipTorque-l.hipV*6.5)*DT;l.kneeV+=(kneeTorque-l.kneeV*7)*DT;
-  l.hip=Math.max(-1.25,Math.min(1.25,l.hip+l.hipV*DT));l.knee=Math.max(-1.55,Math.min(1.55,l.knee+l.kneeV*DT));
-  const foot=footPosition(a,i),oldX=l.footX||foot.x,oldY=l.footY||foot.y,footVX=(foot.x-oldX)/DT,footVY=(foot.y-oldY)/DT;
-  l.contact=foot.y>=GROUND-1;
-  l.footX=foot.x;l.footY=Math.min(GROUND,foot.y);
-  if(l.contact){support++;const traction=Math.max(0,-footVX);push+=traction*.12;torque+=(i<2?1:-1)*traction*.00012; if(footVY>0)push+=Math.min(22,footVY*.018)}
- }
- // Contact with the ground pushes the body forward; air resistance stops runaway speed.
- a.vx+=(push/preset.mass-a.vx*.42)*DT;
- a.vx=Math.max(-20,Math.min(330,a.vx));
- a.x+=a.vx*DT;
- a.angleV+=(torque-a.angleV*1.7)*DT;
- a.angle+=a.angleV*DT;
- // Keep the body at a plausible running height, with a little bounce from leg activity.
- const targetY=GROUND-(preset.leg*.95+preset.bodyH*.45);
- const bounce=(out[1]+out[3]+out[5]+out[7])*.7;
- a.vy+=( (targetY-a.y)*17-a.vy*6+bounce*22)*DT;
- a.y+=a.vy*DT;
- a.maxSpeed=Math.max(a.maxSpeed,a.vx);a.distance=Math.max(0,a.x-100);
- a.energy+=out.reduce((s,v)=>s+Math.abs(v),0)*DT;
- if(a.vx<9)a.stoppedFrames++;else a.stoppedFrames=0;
- if(Math.abs(a.angle)>1.12||a.y>GROUND-12||a.y<30||a.age>1500||a.x<60||a.vx< -18||(a.age>120&&a.stoppedFrames>150)){kill(a)}
+function characterSVG(){
+ const c=state.character,cloth=colors.find(x=>x[0]===c.Colour)?.[1]||"#71845a";
+ const helmet=c.Headwear==="Shell Helmet",hood=c.Headwear==="Ranger Hood",vest=c.Top==="Armoured Vest";
+ return '<svg viewBox="0 0 260 390" role="img" aria-label="Customisable fictional character"><ellipse cx="130" cy="370" rx="72" ry="12" fill="#0006"/><path d="M83 190 L52 235 L64 303 L92 303 L99 250 L161 250 L168 303 L196 303 L208 235 L177 190Z" fill="'+cloth+'" stroke="#d1d9c7" stroke-width="2"/><path d="M99 245 L161 245 L170 346 L145 346 L130 285 L115 346 L90 346Z" fill="#303a31" stroke="#b6c1ad" stroke-width="2"/><path d="M87 343 L118 343 L116 365 L78 365Z M142 343 L173 343 L182 365 L144 365Z" fill="#343b35"/><path d="M91 190 L169 190 L184 252 L76 252Z" fill="'+(vest?"#555f4c":cloth)+'" stroke="#d1d9c7" stroke-width="2"/><path d="M108 193 L152 193 L149 244 L111 244Z" fill="#29332b" opacity=".8"/><path d="M130 193V250 M92 218H168" stroke="#aab69f" stroke-width="2"/><path d="M96 107 Q130 82 164 107 L172 177 Q130 202 88 177Z" fill="#b88e70" stroke="#e0c2a9" stroke-width="2"/><path d="M91 119 Q130 95 169 119 L166 153 Q130 168 94 153Z" fill="'+(c.Face==="Dust Mask"?"#626d60":c.Face==="Visor"?"#9bb0a9":"#b88e70")+'" opacity=".95"/><path d="M100 139H118 M142 139H160" stroke="#252a24" stroke-width="4" stroke-linecap="round"/>'+(helmet?'<path d="M87 119 Q85 68 130 65 Q175 68 173 119 L163 127 L97 127Z" fill="#58664d" stroke="#d1d9c7" stroke-width="3"/>':hood?'<path d="M78 143 Q66 66 130 57 Q194 66 182 143 L164 117 Q130 94 96 117Z" fill="#465342" stroke="#b7c2ad" stroke-width="3"/>':'<path d="M91 104 Q130 70 169 104 L163 113 Q130 91 97 113Z" fill="#465342"/>')+(c.Face==="Dust Mask"?'<path d="M91 143 Q130 165 169 143 L165 164 Q130 182 95 164Z" fill="#46554a" stroke="#c5d0bd" stroke-width="2"/>':c.Face==="Visor"?'<path d="M91 125 Q130 112 169 125 L164 146 Q130 157 96 146Z" fill="#9cb5b0" opacity=".7"/>':'')+'<path d="M62 238 L48 291 L69 300 L91 249 M198 238 L212 291 L191 300 L169 249" fill="none" stroke="'+cloth+'" stroke-width="19" stroke-linecap="round"/><path d="M50 290 L70 296 M190 296 L210 290" stroke="#b7c2ad" stroke-width="8" stroke-linecap="round"/></svg>';
 }
-function kill(a){
- if(a.dead)return;a.dead=true;finished++;
- const upright=Math.max(0,1-Math.abs(a.angle));a.fitness=a.distance+a.maxSpeed*.55+upright*a.age*.045;
- if(a.fitness>bestEver){bestEver=a.fitness;log('★ New best brain · '+a.distance.toFixed(0)+' distance · '+a.maxSpeed.toFixed(0)+' px/s')}
- topSpeedEver=Math.max(topSpeedEver,a.maxSpeed);
- if(finished===animals.length){
-  running=false;autoRestartAt=frame+65;$('runState').textContent='all animals finished · next generation soon';$('runBtn').textContent='↻ Auto restarting';
-  const avg=animals.reduce((s,x)=>s+x.distance,0)/animals.length,best=Math.max(...animals.map(x=>x.distance));
-  $('average').textContent=avg.toFixed(0);$('bestDistance').textContent=best.toFixed(0);$('record').textContent=bestEver.toFixed(0);$('topSpeed').textContent=topSpeedEver.toFixed(0);
-  log('Generation '+generation+' finished · best distance '+best.toFixed(0)+' · breeding next generation');
- }
+function renderCharacter(){
+ $('characterArt').innerHTML=characterSVG();
+ $('charTabs').innerHTML=Object.keys(charCategories).map(k=>'<button class="'+(state.charTab===k?'active':'')+'" data-ctab="'+k+'">'+k+'</button>').join('');
+ document.querySelectorAll('[data-ctab]').forEach(b=>b.onclick=()=>{state.charTab=b.dataset.ctab;renderCharacterOptions()});
+ renderCharacterOptions();
 }
-function tick(){
- frame++;if(!running){if(autoRestartAt&&frame>=autoRestartAt)nextGeneration();return}
- const mult=+$('simSpeed').value;for(let n=0;n<mult;n++){for(const a of animals)updateAnimal(a);if(!animals.some(a=>!a.dead)){running=false;break}}
+function renderCharacterOptions(){
+ const cat=state.charTab,opts=charCategories[cat];
+ $('charOptions').innerHTML='<div class="section-title">'+cat.toUpperCase()+'</div><div class="grid">'+opts.map(([name,desc])=>'<button class="item '+(state.character[cat]===name?'active':'')+'" data-coption="'+name+'"><b>'+name+'</b><small>'+desc+'</small></button>').join('')+'</div>'+(cat==="Top"||cat==="Legs"||cat==="Headwear"?'<div class="section-title" style="margin-top:18px">COLOUR</div><div class="swatches">'+colors.map(([name,col])=>'<button class="swatch '+(state.character.Colour===name?'active':'')+'" title="'+name+'" aria-label="'+name+'" style="background:'+col+'" data-colour="'+name+'"></button>').join('')+'</div>':'');
+ document.querySelectorAll('[data-coption]').forEach(b=>b.onclick=()=>{state.character[cat]=b.dataset.coption;state.activePreset=null;render()});
+ document.querySelectorAll('[data-colour]').forEach(b=>b.onclick=()=>{state.character.Colour=b.dataset.colour;state.activePreset=null;render()});
 }
-function drawAnimal(a,offset){
- const x=a.x-offset,y=a.y;ctx.save();ctx.translate(x,y);ctx.rotate(a.angle);
- // Tail
- ctx.strokeStyle=preset.color;ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-preset.body*.43,-2);ctx.quadraticCurveTo(-preset.body*.62,-22,-preset.body*.72,-12);ctx.stroke();
- // Body
- ctx.fillStyle=preset.color;ctx.beginPath();ctx.ellipse(0,0,preset.body*.52,preset.bodyH*.48,0,0,Math.PI*2);ctx.fill();
- // Neck and head
- ctx.beginPath();ctx.ellipse(preset.body*.42,-preset.bodyH*.24,preset.bodyH*.28,preset.bodyH*.3,.3,0,Math.PI*2);ctx.fill();
- ctx.beginPath();ctx.ellipse(preset.body*.56,-preset.bodyH*.43,preset.bodyH*.28,preset.bodyH*.22,0,0,Math.PI*2);ctx.fill();
- // ears
- ctx.beginPath();ctx.moveTo(preset.body*.48,-preset.bodyH*.59);ctx.lineTo(preset.body*.43,-preset.bodyH*1.05);ctx.lineTo(preset.body*.59,-preset.bodyH*.65);ctx.fill();
- ctx.fillStyle='#202326';ctx.beginPath();ctx.arc(preset.body*.68,-preset.bodyH*.47,2.2,0,Math.PI*2);ctx.fill();
- ctx.restore();
- for(let i=0;i<4;i++){
-  const l=a.legs[i],hip=hipPosition(a,i),foot=footPosition(a,i),kneeAngle=a.angle+l.hip;
-  const knee={x:hip.x+Math.sin(kneeAngle)*preset.upper,y:hip.y+Math.cos(kneeAngle)*preset.upper};
-  ctx.strokeStyle=preset.color;ctx.lineWidth=Math.max(5,preset.bodyH*.17);ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(hip.x-offset,hip.y);ctx.lineTo(knee.x-offset,knee.y);ctx.lineTo(foot.x-offset,Math.min(GROUND,foot.y));ctx.stroke();
-  const muscle=(x1,y1,x2,y2,level,color)=>{ctx.strokeStyle=color;ctx.globalAlpha=.25+level*.75;ctx.lineWidth=2+level*5;ctx.beginPath();ctx.moveTo(x1-offset,y1);ctx.lineTo(x2-offset,y2);ctx.stroke();ctx.globalAlpha=1};
-  muscle(hip.x,hip.y,knee.x,knee.y,l.hipFlex,'#ff8b55');muscle(hip.x,hip.y,knee.x,knee.y,l.hipExtend,'#79baff');
-  muscle(knee.x,knee.y,foot.x,Math.min(GROUND,foot.y),l.kneeFlex,'#ff8b55');muscle(knee.x,knee.y,foot.x,Math.min(GROUND,foot.y),l.kneeExtend,'#79baff');
-  ctx.fillStyle='#24282a';ctx.beginPath();ctx.arc(foot.x-offset,Math.min(GROUND,foot.y),3,0,Math.PI*2);ctx.fill();
- }
- if(a===selected){ctx.strokeStyle='#a8e063';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,preset.body*.68,preset.leg*.9,0,0,Math.PI*2);ctx.stroke()}
+function summary(){
+ const slots=[["PLATFORM",currentWeapon().name],...Object.entries(state.modules).map(([k,v])=>[k.toUpperCase(),v]),...Object.entries(state.character).map(([k,v])=>["OPERATOR · "+k.toUpperCase(),v])];
+ $('buildSummary').innerHTML=slots.map(([k,v])=>'<div class="slot"><strong>'+k+'</strong><span>'+v+'</span></div>').join('');
+ $('buildStatus').textContent=state.activePreset||"UNSAVED";
 }
-function draw(){
- const lead=animals.length?Math.max(...animals.map(a=>a.x)):100;cameraX=Math.max(0,lead-330);
- ctx.fillStyle='#101719';ctx.fillRect(0,0,W,H);
- // distant sky lines
- ctx.strokeStyle='#1c292c';ctx.lineWidth=1;for(let x=-((cameraX*.25)%100);x<W;x+=100){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,GROUND);ctx.stroke()}
- ctx.fillStyle='#182124';ctx.fillRect(0,GROUND,W,H-GROUND);
- ctx.strokeStyle='#d2ddd7';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,GROUND);ctx.lineTo(W,GROUND);ctx.stroke();
- ctx.strokeStyle='#465257';ctx.lineWidth=2;for(let x=-(cameraX%100);x<W;x+=100){ctx.beginPath();ctx.moveTo(x,GROUND+35);ctx.lineTo(x+45,GROUND+35);ctx.stroke()}
- // distance markers
- ctx.fillStyle='#929da3';ctx.font='12px Arial';for(let d=Math.ceil(cameraX/500)*500;d<cameraX+W;d+=500){let x=d-cameraX;ctx.fillText((d/100).toFixed(0)+' m',x+5,GROUND+65);ctx.strokeStyle='#344044';ctx.beginPath();ctx.moveTo(x,GROUND-8);ctx.lineTo(x,GROUND+8);ctx.stroke()}
- if(selected)drawAnimal(selected,cameraX)
- ctx.fillStyle='#a8e063';ctx.font='12px Arial';ctx.fillText('FOLLOWING: '+(selected?('ANIMAL '+(selected.index+1)):'—'),16,25);ctx.fillText('FINISH LINE →',W-110,35);
+function snapshot(){return JSON.parse(JSON.stringify({weapon:state.weapon,modules:state.modules,character:state.character}))}
+function apply(data){state.weapon=data.weapon||"kestrel";state.modules={...state.modules,...data.modules};state.character={...state.character,...data.character};state.activePreset=data.name||null;render()}
+function savePreset(){
+ const name=prompt("Name this preset:","My loadout");if(!name||!name.trim())return;
+ const data=snapshot();data.name=name.trim();const index=state.saved.findIndex(p=>p.name.toLowerCase()===data.name.toLowerCase());if(index>=0)state.saved[index]=data;else state.saved.push(data);
+ state.activePreset=data.name;persist();render();
 }
-function drawPopulation(){
- const cols=4,cellW=250,cellH=84,rows=Math.max(1,Math.ceil(animals.length/cols));popCanvas.height=rows*cellH;pctx.fillStyle='#101719';pctx.fillRect(0,0,popCanvas.width,popCanvas.height);
- for(let i=0;i<animals.length;i++){
-  const a=animals[i],col=i%cols,row=Math.floor(i/cols),x=col*cellW,y=row*cellH;
-  pctx.fillStyle=a===selected?'#26352b':'#151d20';pctx.fillRect(x+2,y+2,cellW-4,cellH-4);pctx.strokeStyle=a===selected?'#a8e063':'#303b3f';pctx.strokeRect(x+2,y+2,cellW-4,cellH-4);
-  pctx.fillStyle='#dce3e5';pctx.font='11px Arial';pctx.fillText('Animal '+(i+1)+' · '+(a.dead?'stopped':a.vx.toFixed(0)+' px/s'),x+9,y+15);
-  if(!a.dead){
-   const bx=x+126,by=y+49;pctx.save();pctx.translate(bx,by);pctx.rotate(a.angle);
-   pctx.strokeStyle=preset.color;pctx.lineWidth=4;pctx.lineCap='round';pctx.beginPath();pctx.moveTo(-preset.body*.28,0);pctx.lineTo(-preset.body*.45,-5);pctx.stroke();
-   pctx.fillStyle=preset.color;pctx.beginPath();pctx.ellipse(0,0,preset.body*.25,preset.bodyH*.25,0,0,Math.PI*2);pctx.fill();
-   pctx.beginPath();pctx.arc(preset.body*.25,-preset.bodyH*.2,preset.bodyH*.19,0,Math.PI*2);pctx.fill();pctx.restore();
-   for(let j=0;j<4;j++){const l=a.legs[j],front=j<2,hipX=bx+(front?1:-1)*preset.body*.085,hipY=by+(j%2===0?-1:1)*preset.bodyH*.08,kneeX=hipX+Math.sin(l.hip)*preset.upper*.32,kneeY=hipY+Math.cos(l.hip)*preset.upper*.32,footX=kneeX+Math.sin(l.hip+l.knee)*preset.lower*.32,footY=Math.min(y+68,kneeY+Math.cos(l.hip+l.knee)*preset.lower*.32);
-    pctx.strokeStyle=preset.color;pctx.lineWidth=3;pctx.beginPath();pctx.moveTo(hipX,hipY);pctx.lineTo(kneeX,kneeY);pctx.lineTo(footX,footY);pctx.stroke();
-    pctx.strokeStyle='#ff8b55';pctx.globalAlpha=.3+Math.max(l.hipFlex,l.kneeFlex)*.7;pctx.lineWidth=1+Math.max(l.hipFlex,l.kneeFlex)*3;pctx.beginPath();pctx.moveTo(hipX,hipY);pctx.lineTo(kneeX,kneeY);pctx.stroke();pctx.globalAlpha=1;
-   }
-  }else{pctx.fillStyle='#929da3';pctx.font='11px Arial';pctx.fillText('FINISHED',x+96,y+54)}
-  pctx.fillStyle='#929da3';pctx.font='10px Arial';pctx.fillText('distance '+a.distance.toFixed(0)+' · best '+a.maxSpeed.toFixed(0)+' px/s',x+9,y+75);
- }
+function persist(){try{localStorage.setItem("fieldkit-presets-v1",JSON.stringify(state.saved))}catch(e){}}
+function renderPresets(){
+ $('presetCards').innerHTML=state.saved.length?state.saved.map((p,i)=>'<button class="item" data-load="'+i+'"><b>'+p.name+'</b><small>'+(weapons.find(w=>w.id===p.weapon)?.name||p.weapon)+' · '+p.character.Top+'</small><small>Click to load</small></button>').join(''):'<div class="muted">No saved presets yet. Build a look and press SAVE PRESET.</div>';
+ document.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>apply({...state.saved[+b.dataset.load]}));
+ $('quickSlots').innerHTML=state.saved.slice(0,4).map((p,i)=>'<button class="btn" data-quick="'+i+'">'+p.name+'</button>').join('')||'<span class="muted">Empty</span>';
+ document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>apply({...state.saved[+b.dataset.quick]}));
 }
-function drawNetwork(brain){
- nctx.fillStyle='#111619';nctx.fillRect(0,0,294,210);if(!brain){nctx.fillStyle='#929da3';nctx.fillText('Start to see a brain',80,105);return}
- const xs=[20,147,274],ys0=Array.from({length:INPUTS},(_,i)=>8+i*11.5),ys1=Array.from({length:HIDDEN},(_,i)=>18+i*19),ys2=Array.from({length:OUTPUTS},(_,i)=>18+i*24);
- let k=0;for(let i=0;i<INPUTS;i++)for(let j=0;j<HIDDEN;j++){let v=brain.w[k++];nctx.strokeStyle=v>=0?'rgba(121,186,255,.32)':'rgba(255,119,119,.32)';nctx.lineWidth=.5+Math.abs(v)*.7;nctx.beginPath();nctx.moveTo(xs[0],ys0[i]);nctx.lineTo(xs[1],ys1[j]);nctx.stroke()}for(let j=0;j<HIDDEN;j++)k++;for(let j=0;j<HIDDEN;j++)for(let o=0;o<OUTPUTS;o++){let v=brain.w[k++];nctx.strokeStyle=v>=0?'rgba(121,186,255,.35)':'rgba(255,119,119,.35)';nctx.lineWidth=.5+Math.abs(v)*.7;nctx.beginPath();nctx.moveTo(xs[1],ys1[j]);nctx.lineTo(xs[2],ys2[o]);nctx.stroke()}
- const act=brain.last||{input:Array(INPUTS).fill(0),hidden:Array(HIDDEN).fill(0),output:Array(OUTPUTS).fill(0)};
- [[ys0,act.input,xs[0]],[ys1,act.hidden,xs[1]],[ys2,act.output,xs[2]]].forEach(([ys,vals,x])=>ys.forEach((y,i)=>{nctx.beginPath();nctx.arc(x,y,3.5,0,Math.PI*2);nctx.fillStyle=(vals[i]||0)>=0?'#79baff':'#ff7777';nctx.fill()}));
- nctx.fillStyle='#929da3';nctx.font='9px Arial';nctx.fillText('BODY + LEGS',4,205);nctx.fillText('HIDDEN',123,205);nctx.fillText('JOINTS',254,205);
+function render(){
+ $('weaponPanel').style.display=state.page==="weapons"?"block":"none";$('characterPanel').style.display=state.page==="character"?"block":"none";$('presetsPanel').style.display=state.page==="presets"?"block":"none";
+ $('attachmentPanel').style.display=state.page==="weapons"?"block":"none";$('characterOptions').style.display=state.page==="character"?"block":"none";
+ document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===state.page));
+ renderWeapon();renderModules();renderCharacter();summary();renderPresets();
 }
-function renderStats(){
- $('alive').textContent=animals.filter(a=>!a.dead).length;$('record').textContent=bestEver.toFixed(0);
- let best=Math.max(0,...animals.map(a=>a.distance));$('bestDistance').textContent=best.toFixed(0);
- $('topSpeed').textContent=Math.max(0,...animals.map(a=>a.maxSpeed)).toFixed(0);
- let avg=animals.length?animals.reduce((s,a)=>s+a.distance,0)/animals.length:0;$('average').textContent=avg.toFixed(0);
- const pct=animals.length?finished/animals.length*100:0;$('progress').value=pct;$('progressText').textContent=pct.toFixed(0)+'%';
-}
-function loop(){tick();if(animals.length){if(!selected||selected.dead)selected=animals.filter(a=>!a.dead).sort((a,b)=>b.distance-a.distance)[0]||animals.slice().sort((a,b)=>b.distance-a.distance)[0];drawNetwork(selected&&selected.brain);renderStats();drawPopulation()}draw();requestAnimationFrame(loop)}
-$('runBtn').onclick=()=>{if(running){running=false;autoRestartAt=0;$('runState').textContent='paused';$('runBtn').textContent='▶ Resume'}else if(!animals.length||animals.every(a=>a.dead)){nextGeneration()}else{autoRestartAt=0;running=true;$('runState').textContent='animals learning';$('runBtn').textContent='Ⅱ Pause'}};
-$('resetBtn').onclick=()=>{generation=0;bestEver=0;topSpeedEver=0;animals=[];autoRestartAt=0;$('generation').textContent='0';$('record').textContent='0';$('topSpeed').textContent='0';$('log').textContent='Evolution reset.';nextGeneration()};
-$('animal').onchange=e=>{preset=presets[e.target.value];$('animalLabel').textContent=preset.name.toLowerCase();$('animalInfo').textContent=preset.info;generation=0;bestEver=0;topSpeedEver=0;animals=[];autoRestartAt=0;$('generation').textContent='0';$('record').textContent='0';$('log').textContent='New animal selected: '+preset.name+'. Starting fresh evolution.';nextGeneration()};
-$('simSpeed').oninput=e=>$('speedVal').textContent=e.target.value+'x';$('mutation').oninput=e=>$('mutationVal').textContent=e.target.value+'%';
-$('animalInfo').textContent=preset.info;nextGeneration();loop();
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{state.page=b.dataset.page;render()});
+$('saveBtn').onclick=savePreset;
+$('resetBtn').onclick=()=>{if(!confirm("Reset the current build?"))return;state.weapon="kestrel";state.modules={Optic:"Clear Dot",Barrel:"Cinder Shroud",Underbarrel:"Arc Handle",Stock:"Foldline",Magazine:"Slate",Finish:"Olive"};state.character={Headwear:"Shell Helmet",Face:"Clear",Top:"Armoured Vest",Legs:"Cargo",Gloves:"Utility",Boots:"Patrol",Colour:"Olive"};state.activePreset=null;render()};
+try{state.saved=JSON.parse(localStorage.getItem("fieldkit-presets-v1")||"[]")}catch(e){state.saved=[]}
+render();
 })();
 </script>
 </body>
