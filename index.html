@@ -84,7 +84,9 @@ class Brain{
 function makeAnimal(brain,index){
  const legs=Array.from({length:4},(_,i)=>({hip:0,knee:.35,hipV:0,kneeV:0,contact:false,footX:0,footY:GROUND}));
  const y=GROUND-(preset.leg*.95+preset.bodyH*.45);
- return{x:100,y, vx:0,vy:0,angle:0,angleV:0,brain:brain||new Brain(),legs,age:0,dead:false,distance:0,maxSpeed:0,fitness:0,phase:Math.random()*Math.PI*2,bodyY:y,energy:0,index};
+ const animal={x:100,y,vx:0,vy:0,angle:0,angleV:0,brain:brain||new Brain(),legs,age:0,dead:false,distance:0,maxSpeed:0,fitness:0,phase:Math.random()*Math.PI*2,bodyY:y,energy:0,index};
+ for(let i=0;i<4;i++){const foot=footPosition(animal,i);animal.legs[i].footX=foot.x;animal.legs[i].footY=foot.y;animal.legs[i].contact=foot.y>=GROUND-1}
+ return animal;
 }
 function nextGeneration(){
  autoRestartAt=0;const n=Math.max(4,Math.min(60,parseInt($('population').value)||24));let brains=[];
