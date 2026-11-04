@@ -112,7 +112,7 @@ function demo(){
  start={x:175,y:245,angle:-1.02};
  draw();
 }
-function setMode(m){mode=m;$('modeLabel').textContent='mode: '+(m==='draw'?'draw walls':m==='erase'?'erase walls':'set start');['drawBtn','eraseBtn','startBtn'].forEach((id,i)=>$(id).classList.toggle('active',['draw','erase','start'][i]===m))}
+function setMode(m){mode=m;$('modeLabel').textContent='mode: '+(m==='draw'?'draw road':m==='erase'?'erase walls':'set start');['drawBtn','eraseBtn','startBtn'].forEach((id,i)=>$(id).classList.toggle('active',['draw','erase','start'][i]===m))}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
 function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy)}
 function draw(){
@@ -175,7 +175,7 @@ function loop(){tick();if(cars.length){if(!selected||selected.dead)selected=cars
 canvas.addEventListener('pointerdown',e=>{const p=pos(e);canvas.setPointerCapture(e.pointerId);if(mode==='start'){start={x:p.x,y:p.y,angle:0};drawing=true;last=p;draw()}else{drawing=true;last=p;if(mode==='draw')walls.push({a:p,b:p});draw()}});
 canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);if(mode==='start'){start.angle=Math.atan2(p.y-start.y,p.x-start.x)}else if(mode==='draw'){if(Math.hypot(p.x-last.x,p.y-last.y)>5){walls.push({a:last,b:p});last=p}}else if(mode==='erase'){walls=walls.filter(s=>segmentDistance(p,s.a,s.b)>22)}draw()});
 function stopDraw(){drawing=false;last=null}canvas.addEventListener('pointerup',stopDraw);canvas.addEventListener('pointercancel',stopDraw);
-$('drawBtn').onclick=()=>setMode('draw');$('eraseBtn').onclick=()=>setMode('erase');$('startBtn').onclick=()=>setMode('start');$('demoBtn').onclick=()=>{running=false;cars=[];demo();log('Demo track loaded')};$('clearBtn').onclick=()=>{running=false;cars=[];walls=[];draw();log('Track cleared')};
+$('drawBtn').onclick=()=>setMode('draw');$('eraseBtn').onclick=()=>setMode('erase');$('startBtn').onclick=()=>setMode('start');$('demoBtn').onclick=()=>{running=false;autoRestartAt=0;cars=[];demo();log('Demo track loaded')};$('clearBtn').onclick=()=>{running=false;autoRestartAt=0;cars=[];walls=[];draw();log('Track cleared')};
 $('runBtn').onclick=()=>{if(running){running=false;autoRestartAt=0;$('runState').textContent='paused';$('runBtn').textContent='▶ Resume';return}if(!cars.length||cars.every(c=>c.dead)){startGen()}else{autoRestartAt=0;running=true;$('runState').textContent='running';$('runBtn').textContent='Ⅱ Pause'}};
 $('resetBtn').onclick=()=>{running=false;autoRestartAt=0;generation=0;bestEver=0;bestTime=null;cars=[];$('generation').textContent='0';$('record').textContent='0';$('bestTime').textContent='—';$('runBtn').textContent='▶ Start learning';$('runState').textContent='paused';startGen()};
 $('roadWidth').oninput=e=>{roadWidth=+e.target.value;$('roadWidthVal').textContent=roadWidth+'px';draw()};$('simSpeed').oninput=e=>$('speedVal').textContent=e.target.value+'x';$('mutation').oninput=e=>$('mutationVal').textContent=e.target.value+'%';$('sensor').oninput=e=>$('sensorVal').textContent=e.target.value;
