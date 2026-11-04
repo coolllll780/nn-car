@@ -187,8 +187,16 @@ function drawPopulation(){
   const a=animals[i],col=i%cols,row=Math.floor(i/cols),x=col*cellW,y=row*cellH;
   pctx.fillStyle=a===selected?'#26352b':'#151d20';pctx.fillRect(x+2,y+2,cellW-4,cellH-4);pctx.strokeStyle=a===selected?'#a8e063':'#303b3f';pctx.strokeRect(x+2,y+2,cellW-4,cellH-4);
   pctx.fillStyle='#dce3e5';pctx.font='11px Arial';pctx.fillText('Animal '+(i+1)+' · '+(a.dead?'stopped':a.vx.toFixed(0)+' px/s'),x+9,y+15);
-  if(!a.dead){const sc=.30,originX=x+105,originY=y+54;pctx.save();pctx.translate(originX-a.x*sc,originY-a.y*sc);pctx.scale(sc,sc);drawAnimal(a,0);pctx.restore()}
-  else{pctx.fillStyle='#929da3';pctx.font='11px Arial';pctx.fillText('FINISHED',x+96,y+54)}
+  if(!a.dead){
+   const bx=x+126,by=y+49;pctx.save();pctx.translate(bx,by);pctx.rotate(a.angle);
+   pctx.strokeStyle=preset.color;pctx.lineWidth=4;pctx.lineCap='round';pctx.beginPath();pctx.moveTo(-preset.body*.28,0);pctx.lineTo(-preset.body*.45,-5);pctx.stroke();
+   pctx.fillStyle=preset.color;pctx.beginPath();pctx.ellipse(0,0,preset.body*.25,preset.bodyH*.25,0,0,Math.PI*2);pctx.fill();
+   pctx.beginPath();pctx.arc(preset.body*.25,-preset.bodyH*.2,preset.bodyH*.19,0,Math.PI*2);pctx.fill();pctx.restore();
+   for(let j=0;j<4;j++){const l=a.legs[j],front=j<2,hipX=bx+(front?1:-1)*preset.body*.085,hipY=by+(j%2===0?-1:1)*preset.bodyH*.08,kneeX=hipX+Math.sin(l.hip)*preset.upper*.32,kneeY=hipY+Math.cos(l.hip)*preset.upper*.32,footX=kneeX+Math.sin(l.hip+l.knee)*preset.lower*.32,footY=Math.min(y+68,kneeY+Math.cos(l.hip+l.knee)*preset.lower*.32);
+    pctx.strokeStyle=preset.color;pctx.lineWidth=3;pctx.beginPath();pctx.moveTo(hipX,hipY);pctx.lineTo(kneeX,kneeY);pctx.lineTo(footX,footY);pctx.stroke();
+    pctx.strokeStyle='#ff8b55';pctx.globalAlpha=.3+Math.max(l.hipFlex,l.kneeFlex)*.7;pctx.lineWidth=1+Math.max(l.hipFlex,l.kneeFlex)*3;pctx.beginPath();pctx.moveTo(hipX,hipY);pctx.lineTo(kneeX,kneeY);pctx.stroke();pctx.globalAlpha=1;
+   }
+  }else{pctx.fillStyle='#929da3';pctx.font='11px Arial';pctx.fillText('FINISHED',x+96,y+54)}
   pctx.fillStyle='#929da3';pctx.font='10px Arial';pctx.fillText('distance '+a.distance.toFixed(0)+' · best '+a.maxSpeed.toFixed(0)+' px/s',x+9,y+75);
  }
 }
