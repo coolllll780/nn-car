@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nn car</title>
+<style>
+:root{color-scheme:dark;--bg:#101214;--panel:#191d20;--line:#30373b;--muted:#929da3;--text:#e7ecee;--green:#a8e063;--red:#ff7777;--blue:#79baff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Arial,Helvetica,sans-serif}
+header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:21px;margin:0;font-weight:700;letter-spacing:-.6px}h1 span{color:var(--green)}
+.sub{color:var(--muted);font-size:12px;margin-top:3px}
+main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.panel-head{padding:11px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-head strong{font-size:13px}.panel-body{padding:13px}
+#trackWrap{position:relative;background:#101719}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+#track{aspect-ratio:1000/650}
+.toolbar{display:flex;flex-wrap:wrap;gap:7px}
+button{background:#262d31;border:1px solid #424c52;color:var(--text);border-radius:5px;padding:8px 11px;font:inherit;font-size:12px;cursor:pointer}
+button:hover{border-color:var(--green)}button.primary{background:var(--green);border-color:var(--green);color:#10150c;font-weight:700}button.active{border-color:var(--green);color:var(--green)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.note{font-size:11px;color:var(--muted);margin-top:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#121619;border:1px solid var(--line);border-radius:6px;padding:9px}
+.stat label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px}
+.stat b{display:block;font-size:20px;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat small{font-size:10px;color:var(--muted)}
+.side{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0}
+.row label{font-size:12px;color:#c5cdd1}
+input[type=range]{width:120px;accent-color:var(--green)}
+input[type=number]{width:65px;background:#101619;border:1px solid var(--line);color:var(--text);padding:5px;border-radius:4px}
+.value{font-size:11px;color:var(--green);min-width:32px;text-align:right}
+#network{width:100%;height:210px;background:#111619;border:1px solid var(--line);border-radius:5px}
+.net-legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+#log{font:11px/1.6 Consolas,monospace;color:#aab4b9;max-height:100px;overflow:auto;white-space:pre-wrap}
+progress{width:100%;height:7px;accent-color:var(--green)}
+@media(max-width:900px){main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
+@media(max-width:520px){header{padding:14px}main{padding:9px}.toolbar button{flex:1}}
+</style>
+</head>
+<body>
+<header><div><h1><span>nn</span> car</h1><div class="sub">little cars. tiny brains. lots of learning.</div></div><div class="sub">NEURAL NETWORK EXPERIMENT / 001</div></header>
+<main>
+<section class="panel">
+ <div class="panel-head"><strong>TRACK EDITOR</strong><span class="sub" id="modeLabel">mode: draw walls</span></div>
+ <div id="trackWrap"><canvas id="track" width="1000" height="650"></canvas></div>
+ <div class="panel-body">
+  <div class="toolbar">
+   <button id="drawBtn" class="active">✎ Draw walls</button><button id="eraseBtn">⌫ Erase</button><button id="startBtn">➤ Set start</button><button id="demoBtn">Demo track</button><button id="clearBtn">Clear</button>
+  </div>
+  <div class="note">Draw the two edges of a road. Cars stay inside the space between them. Set the start arrow pointing along the track. You can edit while paused.</div>
+ </div>
+</section>
+<aside class="side">
+ <section class="panel">
+  <div class="panel-head"><strong>SIMULATION</strong><span class="sub" id="runState">paused</span></div>
+  <div class="panel-body">
+   <div class="toolbar"><button class="primary" id="runBtn">▶ Start learning</button><button id="resetBtn">↻ Reset cars</button></div>
+   <div style="height:12px"></div>
+   <div class="stats">
+    <div class="stat"><label>Generation</label><b id="generation">0</b></div>
+    <div class="stat"><label>Cars running</label><b id="alive">0</b></div>
+    <div class="stat"><label>Best distance</label><b id="bestDistance">0</b><small>metres-ish</small></div>
+    <div class="stat"><label>Best time</label><b id="bestTime">—</b><small>for best distance</small></div>
+    <div class="stat"><label>Average distance</label><b id="average">0</b></div>
+    <div class="stat"><label>Best ever</label><b id="record">0</b></div>
+   </div>
+   <div class="row"><label>Generation progress</label><span class="value" id="progressText">0%</span></div><progress id="progress" value="0" max="100"></progress>
+   <div class="note">Cars get rewarded for going further. If a generation doesn't beat the record, it gets no treat. The best brains are kept and mutated.</div>
+  </div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><strong>NEURAL NETWORK</strong><span class="sub" id="brainLabel">best car</span></div>
+  <div class="panel-body">
+   <canvas id="network" width="294" height="210"></canvas>
+   <div class="net-legend"><span><i class="dot" style="background:#79baff"></i>positive</span><span><i class="dot" style="background:#ff7777"></i>negative</span><span>brighter = stronger</span></div>
+   <div class="note" id="brainReadout">Inputs: 5 distance sensors + speed. Outputs: steering + throttle/brake.</div>
+  </div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><strong>EVOLUTION SETTINGS</strong></div>
+  <div class="panel-body">
+   <div class="row"><label>Cars per generation</label><input id="population" type="number" min="4" max="80" value="24"></div>
+   <div class="row"><label>Simulation speed</label><input id="simSpeed" type="range" min="1" max="8" value="3"><span class="value" id="speedVal">3x</span></div>
+   <div class="row"><label>Mutation amount</label><input id="mutation" type="range" min="1" max="100" value="22"><span class="value" id="mutationVal">22%</span></div>
+   <div class="row"><label>Sensor length</label><input id="sensor" type="range" min="70" max="240" value="170"><span class="value" id="sensorVal">170</span></div>
+   <div class="note">Changing population or mutation applies next generation. Brains are small feed-forward neural networks trained by evolution.</div>
+  </div>
+ </section>
+ <section class="panel">
+  <div class="panel-head"><strong>LEARNING LOG</strong><span class="sub">latest events</span></div>
+  <div class="panel-body"><div id="log">Waiting for the first generation...</div></div>
+ </section>
+</aside>
+</main>
+<script>
+(() => {
+const canvas=document.getElementById('track'),ctx=canvas.getContext('2d'),netCanvas=document.getElementById('network'),nctx=netCanvas.getContext('2d');
+const W=1000,H=650, sensorAngles=[-1.05,-.58,0,.58,1.05],INPUTS=6,HIDDEN=7,OUTPUTS=3;
+let walls=[],start={x:175,y:325,angle:0},mode='draw',drawing=false,last=null,running=false,generation=0,cars=[],bestEver=0,bestTime=null,genBest=0,selected=null,genStart=0,frame=0,finished=0;
+const $=id=>document.getElementById(id);
+function log(s){const el=$('log');el.textContent=(s+'\n'+el.textContent).slice(0,1100)}
+function demo(){
+ walls=[];
+ const add=(pts)=>{for(let i=1;i<pts.length;i++)walls.push({a:{x:pts[i-1][0],y:pts[i-1][1]},b:{x:pts[i][0],y:pts[i][1]}})};
+ // oval-ish closed road, two separate boundaries
+ add([[125,220],[175,145],[300,105],[470,105],[620,135],[760,190],[850,275],[860,380],[790,465],[650,520],[480,535],[320,510],[200,455],[125,380],[125,220]]);
+ add([[220,270],[255,220],[340,190],[465,190],[590,210],[700,250],[770,305],[775,360],[715,410],[610,455],[485,465],[365,445],[270,410],[220,350],[220,270]]);
+ start={x:175,y:245,angle:1.0};
+ draw();
+}
+function setMode(m){mode=m;$('modeLabel').textContent='mode: '+(m==='draw'?'draw walls':m==='erase'?'erase walls':'set start');['drawBtn','eraseBtn','startBtn'].forEach((id,i)=>$(id).classList.toggle('active',['draw','erase','start'][i]===m))}
+function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy)}
+function draw(){
+ ctx.fillStyle='#101719';ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='#1d292b';ctx.lineWidth=1;for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ // road boundaries
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#d4ddd8';ctx.lineWidth=4;
+ for(const s of walls){ctx.beginPath();ctx.moveTo(s.a.x,s.a.y);ctx.lineTo(s.b.x,s.b.y);ctx.stroke()}
+ // cars and sensors
+ for(const c of cars){if(c.dead)continue;
+  if(c===selected||c===cars[0]){ctx.strokeStyle='rgba(121,186,255,.28)';ctx.lineWidth=1;for(let i=0;i<5;i++){let a=c.angle+sensorAngles[i];ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+Math.cos(a)*c.sensors[i],c.y+Math.sin(a)*c.sensors[i]);ctx.stroke()}}
+  ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.angle);ctx.fillStyle=c===selected?'#a8e063':c===cars[0]?'#79baff':'#e7a85b';ctx.fillRect(-10,-6,20,12);ctx.fillStyle='#151a1c';ctx.fillRect(1,-4,5,8);ctx.restore();
+ }
+ // start marker
+ ctx.save();ctx.translate(start.x,start.y);ctx.rotate(start.angle);ctx.fillStyle='#a8e063';ctx.beginPath();ctx.moveTo(17,0);ctx.lineTo(-10,-9);ctx.lineTo(-6,0);ctx.lineTo(-10,9);ctx.closePath();ctx.fill();ctx.restore();
+ ctx.fillStyle='#a8e063';ctx.font='12px Arial';ctx.fillText('START',start.x-18,start.y-20);
+}
+function ray(x,y,a,max){let best=max;const dx=Math.cos(a),dy=Math.sin(a);for(const s of walls){const x1=s.a.x,y1=s.a.y,x2=s.b.x,y2=s.b.y;const den=dx*(y2-y1)-dy*(x2-x1);if(Math.abs(den)<1e-8)continue;const t=((x1-x)*(y2-y1)-(y1-y)*(x2-x1))/den;const u=((x1-x)*dy-(y1-y)*dx)/den;if(t>=0&&u>=0&&u<=1&&t<best)best=t}return best}
+function Brain(w){this.w=w||Array.from({length:INPUTS*HIDDEN+HIDDEN+HIDDEN*OUTPUTS+OUTPUTS},()=>Math.random()*2-1)}
+Brain.prototype.forward=function(input){let k=0,h=[];for(let j=0;j<HIDDEN;j++){let z=0;for(let i=0;i<INPUTS;i++)z+=input[i]*this.w[k++];z+=this.w[k++];h.push(Math.tanh(z))}let out=[];for(let j=0;j<OUTPUTS;j++){let z=0;for(let i=0;i<HIDDEN;i++)z+=h[i]*this.w[k++];z+=this.w[k++];out.push(Math.tanh(z))}this.last={input:input.slice(),hidden:h,output:out};return out};
+Brain.prototype.clone=function(){return new Brain(this.w.slice())};
+Brain.prototype.mutate=function(rate){for(let i=0;i<this.w.length;i++)if(Math.random()<rate)this.w[i]+=randn()*.45;return this};
+function randn(){return(Math.random()+Math.random()+Math.random()+Math.random()+Math.random()+Math.random()-3)*.816}
+function makeCar(brain){return{x:start.x,y:start.y,angle:start.angle,speed:1.2,brain:brain||new Brain(),dead:false,age:0,distance:0,fitness:0,travel:0,sensors:Array(5).fill(0),lastX:start.x,lastY:start.y,stall:0,steer:0,throttle:0}}
+function population(){let n=Math.max(4,Math.min(80,parseInt($('population').value)||24));if(generation===0||!cars.length)return Array.from({length:n},()=>makeCar());let ranked=cars.slice().sort((a,b)=>b.fitness-a.fitness);let elite=ranked.slice(0,Math.max(2,Math.ceil(n*.2)));let next=[];for(let i=0;i<n;i++){let parent=elite[i%elite.length].brain.clone();if(i>=2)parent.mutate((+$('mutation').value)/100);next.push(makeCar(parent))}return next}
+function startGen(){cars=population();generation++;genStart=performance.now();finished=0;genBest=0;selected=cars[0];$('generation').textContent=generation;$('runState').textContent='running';log('Generation '+generation+' started · '+cars.length+' cars');draw()}
+function die(c){if(c.dead)return;c.dead=true;finished++;c.fitness=c.distance+Math.min(c.travel,100)*.08;if(c.fitness>genBest)genBest=c.fitness;if(c.fitness>bestEver){bestEver=c.fitness;bestTime=c.age/60;log('🍪 NEW RECORD! '+bestEver.toFixed(0)+' distance · '+bestTime.toFixed(1)+'s')}if(finished===cars.length){running=false;$('runState').textContent='generation ended';let avg=cars.reduce((s,x)=>s+x.distance,0)/cars.length;$('average').textContent=avg.toFixed(0);$('bestDistance').textContent=genBest.toFixed(0);$('record').textContent=bestEver.toFixed(0);$('bestTime').textContent=bestTime===null?'—':bestTime.toFixed(1)+'s';if(genBest<=bestEver+0.5)log('No new record. Brains get another round of mutations.');log('Generation '+generation+' finished · best '+genBest.toFixed(0));$('runBtn').textContent='▶ Next generation'}}
+function updateCar(c){
+ if(c.dead)return;c.age++;
+ let max=+$('sensor').value;
+ c.sensors=sensorAngles.map(a=>ray(c.x,c.y,c.angle+a,max));
+ let input=c.sensors.map(v=>v/max*2-1);input.push(c.speed/4,1);
+ const out=c.brain.forward(input),steer=out[0],throttle=out[1],brake=out[2];
+ c.steer=steer;c.throttle=throttle;
+ c.angle+=steer*.065*Math.max(.45,c.speed/2.5);
+ // speed is continuous: it can slow down, but never reach zero
+ c.speed=Math.max(.65,Math.min(4.2,c.speed+throttle*.045-brake*.065));
+ let nx=c.x+Math.cos(c.angle)*c.speed,ny=c.y+Math.sin(c.angle)*c.speed;
+ if(nx<8||nx>W-8||ny<8||ny>H-8||walls.some(s=>segmentDistance({x:nx,y:ny},s.a,s.b)<10)){die(c);return}
+ c.x=nx;c.y=ny;c.travel+=c.speed;c.distance+=c.speed;c.lastX=nx;c.lastY=ny;
+ // A car that barely moves forward still cannot stop, but a stuck spin is penalised.
+ if(c.age>100&&c.travel/c.age<.72) c.stall++;else c.stall=0;
+ if(c.stall>180||c.age>3600)die(c);
+}
+function tick(){if(!running)return;const mult=+$('simSpeed').value;for(let n=0;n<mult;n++){for(const c of cars)updateCar(c);if(!cars.some(c=>!c.dead)){running=false;break}}}
+function renderStats(){let alive=cars.filter(c=>!c.dead).length;$('alive').textContent=alive;$('bestDistance').textContent=Math.max(0,...cars.map(c=>c.distance)).toFixed(0);let avg=cars.length?cars.reduce((s,c)=>s+c.distance,0)/cars.length:0;$('average').textContent=avg.toFixed(0);$('record').textContent=bestEver.toFixed(0);$('bestTime').textContent=bestTime===null?'—':bestTime.toFixed(1)+'s';let pct=cars.length?finished/cars.length*100:0;$('progress').value=pct;$('progressText').textContent=pct.toFixed(0)+'%'}
+function drawNet(brain){nctx.fillStyle='#111619';nctx.fillRect(0,0,294,210);if(!brain){nctx.fillStyle='#929da3';nctx.fillText('Start a simulation to see a brain',35,105);return}
+ const xs=[27,147,267],ys1=[24,55,86,117,148,179],ys2=[17,45,73,101,129,157,185],ys3=[65,105,145],nodes=[ys1,ys2,ys3],w=brain.w;let k=0;
+ // connections in same order as feed-forward weights
+ for(let i=0;i<INPUTS;i++)for(let j=0;j<HIDDEN;j++){let v=w[k++];nctx.strokeStyle=v>=0?'rgba(121,186,255,'+Math.min(.9,.12+Math.abs(v)*.35)+')':'rgba(255,119,119,'+Math.min(.9,.12+Math.abs(v)*.35)+')';nctx.lineWidth=.5+Math.abs(v)*1.1;nctx.beginPath();nctx.moveTo(xs[0],ys1[i]);nctx.lineTo(xs[1],ys2[j]);nctx.stroke()}for(let j=0;j<HIDDEN;j++)k++;for(let j=0;j<HIDDEN;j++)for(let o=0;o<OUTPUTS;o++){let v=w[k++];nctx.strokeStyle=v>=0?'rgba(121,186,255,'+Math.min(.9,.12+Math.abs(v)*.35)+')':'rgba(255,119,119,'+Math.min(.9,.12+Math.abs(v)*.35)+')';nctx.lineWidth=.5+Math.abs(v)*1.1;nctx.beginPath();nctx.moveTo(xs[1],ys2[j]);nctx.lineTo(xs[2],ys3[o]);nctx.stroke()}
+ let activ=brain.last||{input:Array(INPUTS).fill(0),hidden:Array(HIDDEN).fill(0),output:Array(OUTPUTS).fill(0)};
+ nodes.forEach((arr,layer)=>arr.forEach((y,i)=>{let val=layer===0?activ.input[i]:layer===1?activ.hidden[i]:activ.output[i];nctx.beginPath();nctx.arc(xs[layer],y,5,0,Math.PI*2);nctx.fillStyle=val>=0?'#79baff':'#ff7777';nctx.globalAlpha=.45+Math.min(1,Math.abs(val))*.55;nctx.fill();nctx.globalAlpha=1;nctx.strokeStyle='#dbe2e5';nctx.lineWidth=.7;nctx.stroke()}));
+ nctx.fillStyle='#929da3';nctx.font='9px Arial';nctx.fillText('SENSORS + SPEED',5,204);nctx.fillText('HIDDEN',125,204);nctx.fillText('STEER / GO / BRAKE',218,204)
+}
+function loop(){tick();if(cars.length){if(!selected||selected.dead)selected=cars.filter(c=>!c.dead).sort((a,b)=>b.distance-a.distance)[0]||cars.slice().sort((a,b)=>b.distance-a.distance)[0];drawNet(selected?.brain);renderStats()}draw();requestAnimationFrame(loop)}
+canvas.addEventListener('pointerdown',e=>{const p=pos(e);canvas.setPointerCapture(e.pointerId);if(mode==='start'){start={x:p.x,y:p.y,angle:0};drawing=true;last=p;draw()}else{drawing=true;last=p;if(mode==='draw')walls.push({a:p,b:p});draw()}});
+canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);if(mode==='start'){start.angle=Math.atan2(p.y-start.y,p.x-start.x)}else if(mode==='draw'){if(Math.hypot(p.x-last.x,p.y-last.y)>5){walls.push({a:last,b:p});last=p}}else if(mode==='erase'){walls=walls.filter(s=>segmentDistance(p,s.a,s.b)>22)}draw()});
+function stopDraw(){drawing=false;last=null}canvas.addEventListener('pointerup',stopDraw);canvas.addEventListener('pointercancel',stopDraw);
+$('drawBtn').onclick=()=>setMode('draw');$('eraseBtn').onclick=()=>setMode('erase');$('startBtn').onclick=()=>setMode('start');$('demoBtn').onclick=()=>{running=false;cars=[];demo();log('Demo track loaded')};$('clearBtn').onclick=()=>{running=false;cars=[];walls=[];draw();log('Track cleared')};
+$('runBtn').onclick=()=>{if(running){running=false;$('runState').textContent='paused';$('runBtn').textContent='▶ Resume';return}if(!cars.length||cars.every(c=>c.dead)){startGen()}else{running=true;$('runState').textContent='running';$('runBtn').textContent='Ⅱ Pause'}};
+$('resetBtn').onclick=()=>{running=false;generation=0;bestEver=0;bestTime=null;cars=[];$('generation').textContent='0';$('record').textContent='0';$('bestTime').textContent='—';$('runBtn').textContent='▶ Start learning';$('runState').textContent='paused';startGen();running=true;$('runBtn').textContent='Ⅱ Pause'};
+$('simSpeed').oninput=e=>$('speedVal').textContent=e.target.value+'x';$('mutation').oninput=e=>$('mutationVal').textContent=e.target.value+'%';$('sensor').oninput=e=>$('sensorVal').textContent=e.target.value;
+demo();drawNet(null);loop();
+})();
+</script>
+</body>
+</html>
